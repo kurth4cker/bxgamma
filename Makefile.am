@@ -21,8 +21,8 @@
 
 bin_PROGRAMS = xgamma
 
-xgamma_CFLAGS = $(DEP_CFLAGS)
-xgamma_LDADD = $(DEP_LIBS)
+xgamma_CFLAGS = $(XGAMMA_CFLAGS)
+xgamma_LDADD = $(XGAMMA_LIBS)
 
 xgamma_SOURCES =	\
         xgamma.c
