@@ -27,6 +27,6 @@ xgamma_LDADD = $(XGAMMA_LIBS)
 xgamma_SOURCES =	\
         xgamma.c
 
-dist_man_MANS = \
+dist_man1_MANS = \
         xgamma.man
 
