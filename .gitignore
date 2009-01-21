@@ -18,3 +18,7 @@ stamp-h1
 xgamma
 xgamma.1
 *~
+*.o
+xgamma-*.tar.*
+ChangeLog
+tags
