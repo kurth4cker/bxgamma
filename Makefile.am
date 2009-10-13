@@ -21,7 +21,7 @@
 
 bin_PROGRAMS = xgamma
 
-AM_CFLAGS = $(XGAMMA_CFLAGS)
+AM_CFLAGS = $(CWARNFLAGS) $(XGAMMA_CFLAGS)
 xgamma_LDADD = $(XGAMMA_LIBS)
 
 xgamma_SOURCES =	\
@@ -70,4 +70,4 @@ MAN_SUBSTS = \
 SUFFIXES = .$(APP_MAN_SUFFIX) .man
 
 .man.$(APP_MAN_SUFFIX):
-	sed $(MAN_SUBSTS) < $< > $@
+	$(AM_V_GEN)$(SED) $(MAN_SUBSTS) < $< > $@
