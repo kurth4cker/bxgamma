@@ -39,12 +39,15 @@ EXTRA_DIST = $(appman_PRE)
 CLEANFILES = $(appman_DATA)
 
 
-.PHONY: ChangeLog
+.PHONY: ChangeLog INSTALL
+
+INSTALL:
+	$(INSTALL_CMD)
 
 ChangeLog:
 	$(CHANGELOG_CMD)
 
-dist-hook: ChangeLog
+dist-hook: ChangeLog INSTALL
 
 
 SED = sed
