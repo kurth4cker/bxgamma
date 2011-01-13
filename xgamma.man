@@ -89,7 +89,7 @@ drivers.
 The gamma values are passed to the Xserver with 3 decimal places of
 accuracy.
 .SH SEE ALSO
-xvidtune(1)
+xvidtune(__appmansuffix__)
 .SH AUTHORS
 Kaleb S. Keithley, X Consortium.
 .br
