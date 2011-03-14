@@ -31,6 +31,9 @@ xgamma - Alter a monitor's gamma correction through the X server
 allows X users to query and alter the gamma correction of a monitor via
 the X video mode extension (XFree86-VidModeExtension).
 .PP
+Note that the \fBxgamma\fP utility is obsolete and deficient, \fBxrandr\fP
+should be used with drivers that support the \fBXRandr\fP extension.
+.PP
 If no value for the gamma correction is given via the
 .I -gamma
 or
@@ -89,7 +92,8 @@ drivers.
 The gamma values are passed to the Xserver with 3 decimal places of
 accuracy.
 .SH SEE ALSO
-xvidtune(__appmansuffix__)
+xvidtune(__appmansuffix__),
+xrandr(__appmansuffix__)
 .SH AUTHORS
 Kaleb S. Keithley, X Consortium.
 .br
