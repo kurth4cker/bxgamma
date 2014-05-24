@@ -67,7 +67,7 @@ Syntax(void)
  */
 
 static Bool 
-isabbreviation(char *arg, char *s, size_t minslen)
+isabbreviation(const char *arg, const char *s, size_t minslen)
 {
     size_t arglen;
     size_t slen;
