@@ -67,10 +67,10 @@ Syntax(void)
  */
 
 static Bool 
-isabbreviation(char *arg, char *s, int minslen)
+isabbreviation(char *arg, char *s, size_t minslen)
 {
-    int arglen;
-    int slen;
+    size_t arglen;
+    size_t slen;
 
     /* exact match */
     if (strcmp (arg, s) == 0) return (True);
