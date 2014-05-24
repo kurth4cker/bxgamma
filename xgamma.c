@@ -22,6 +22,10 @@
  * Written by David Bateman
  */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <stdio.h>
 #include <errno.h>
 #include <X11/Xos.h>
@@ -54,6 +58,7 @@ Syntax(const char *errmsg)
              "    -display host:dpy       or -d\n"
              "    -quiet                  or -q\n"
              "    -screen                 or -s\n"
+             "    -version                or -v\n"
              "    -gamma f.f              Gamma Value\n"
              "    -rgamma f.f             Red Gamma Value\n"
              "    -ggamma f.f             Green Gamma Value\n"
@@ -113,6 +118,9 @@ main(int argc, char *argv[])
 	    } else if (isabbreviation ("-quiet", arg, 1)) {
 		quiet = True;
 		continue;
+	    } else if (isabbreviation ("-version", arg, 1)) {
+		puts(PACKAGE_STRING);
+		exit(0);
 	    } else if (isabbreviation ("-screen", arg, 1)) {
 		if (++i >= argc) Syntax ("-screen requires an argument");
 		screen = atoi(argv[i]);
