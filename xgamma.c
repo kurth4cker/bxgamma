@@ -44,8 +44,11 @@ static int EventBase, ErrorBase;
 #define GAMMA_MAX 10.0
 
 static void _X_NORETURN
-Syntax(void)
+Syntax(const char *errmsg)
 {
+    if (errmsg != NULL)
+        fprintf (stderr, "%s: %s\n\n", ProgramName, errmsg);
+
     fprintf (stderr, "usage:  %s [-options]\n\n%s", ProgramName,
              "where the available options are:\n"
              "    -display host:dpy       or -d\n"
@@ -104,20 +107,20 @@ main(int argc, char *argv[])
 
 	if (arg[0] == '-') {
 	    if (isabbreviation ("-display", arg, 1)) {
-		if (++i >= argc) Syntax ();
+		if (++i >= argc) Syntax ("-display requires an argument");
 		displayname = argv[i];
 		continue;
 	    } else if (isabbreviation ("-quiet", arg, 1)) {
 		quiet = True;
 		continue;
 	    } else if (isabbreviation ("-screen", arg, 1)) {
-		if (++i >= argc) Syntax ();
+		if (++i >= argc) Syntax ("-screen requires an argument");
 		screen = atoi(argv[i]);
 		continue;
 	    } else if (isabbreviation ("-gamma", arg, 2)) {
-		if (++i >= argc) Syntax ();
+		if (++i >= argc) Syntax ("-gamma requires an argument");
 		if ((rgam >= 0.) || (ggam >= 0.) || (bgam >= 0.))
-		    Syntax ();
+		    Syntax ("-gamma cannot be used with -rgamma, -ggamma, or -bgamma");
 		gam = (float)atof(argv[i]);
 		if ((gam < GAMMA_MIN) || (gam > GAMMA_MAX)) {
 		    fprintf(stderr,
@@ -127,8 +130,8 @@ main(int argc, char *argv[])
 		}
 		continue;
 	    } else if (isabbreviation ("-rgamma", arg, 2)) {
-		if (++i >= argc) Syntax ();
-		if (gam >= 0.) Syntax ();
+		if (++i >= argc) Syntax ("-rgamma requires an argument");
+		if (gam >= 0.) Syntax ("cannot set both -gamma and -rgamma");
 		rgam = (float)atof(argv[i]);
 		if ((rgam < GAMMA_MIN) || (rgam > GAMMA_MAX)) {
 		    fprintf(stderr,
@@ -138,8 +141,8 @@ main(int argc, char *argv[])
 		}
 		continue;
 	    } else if (isabbreviation ("-ggamma", arg, 2)) {
-		if (++i >= argc) Syntax ();
-		if (gam >= 0.) Syntax ();
+		if (++i >= argc) Syntax ("-ggamma requires an argument");
+		if (gam >= 0.) Syntax ("cannot set both -gamma and -ggamma");
 		ggam = (float)atof(argv[i]);
 		if ((ggam < GAMMA_MIN) || (ggam > GAMMA_MAX)) {
 		    fprintf(stderr,
@@ -149,8 +152,8 @@ main(int argc, char *argv[])
 		}
 		continue;
 	    } else if (isabbreviation ("-bgamma", arg, 2)) {
-		if (++i >= argc) Syntax ();
-		if (gam >= 0.) Syntax ();
+		if (++i >= argc) Syntax ("-bgamma requires an argument");
+		if (gam >= 0.) Syntax ("cannot set both -gamma and -bgamma");
 		bgam = (float)atof(argv[i]);
 		if ((bgam < GAMMA_MIN) || (bgam > GAMMA_MAX)) {
 		    fprintf(stderr,
@@ -159,10 +162,17 @@ main(int argc, char *argv[])
 		    exit(1);
 		}
 		continue;
-	    } else 
-		Syntax ();
-	} else 
-	    Syntax ();
+	    } else {
+		if (!isabbreviation ("-help", arg, 1))
+		    fprintf (stderr, "%s: unrecognized argument %s\n\n",
+			     ProgramName, arg);
+		Syntax (NULL);
+	    }
+	} else {
+	    fprintf (stderr, "%s: unrecognized argument %s\n\n",
+		     ProgramName, arg);
+	    Syntax (NULL);
+	}
     }
 
     if ((dpy = XOpenDisplay(displayname)) == NULL) {
