@@ -46,17 +46,16 @@ static int EventBase, ErrorBase;
 static void _X_NORETURN
 Syntax(void)
 {
-    fprintf (stderr, "usage:  %s [-options]\n\n", 
-    	     ProgramName);
-    fprintf (stderr, "where the available options are:\n");
-    fprintf (stderr, "    -display host:dpy       or -d\n");
-    fprintf (stderr, "    -quiet                  or -q\n");
-    fprintf (stderr, "    -screen                 or -s\n");
-    fprintf (stderr, "    -gamma f.f              Gamma Value\n");
-    fprintf (stderr, "    -rgamma f.f             Red Gamma Value\n");
-    fprintf (stderr, "    -ggamma f.f             Green Gamma Value\n");
-    fprintf (stderr, "    -bgamma f.f             Blue Gamma Value\n\n");
-    fprintf (stderr, "If no gamma is specified, returns the current setting\n");
+    fprintf (stderr, "usage:  %s [-options]\n\n%s", ProgramName,
+             "where the available options are:\n"
+             "    -display host:dpy       or -d\n"
+             "    -quiet                  or -q\n"
+             "    -screen                 or -s\n"
+             "    -gamma f.f              Gamma Value\n"
+             "    -rgamma f.f             Red Gamma Value\n"
+             "    -ggamma f.f             Green Gamma Value\n"
+             "    -bgamma f.f             Blue Gamma Value\n\n"
+             "If no gamma is specified, returns the current setting\n");
     exit (1);
 }
 
