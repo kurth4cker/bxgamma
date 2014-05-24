@@ -43,7 +43,7 @@ static int EventBase, ErrorBase;
 #define GAMMA_MIN 0.1
 #define GAMMA_MAX 10.0
 
-static void 
+static void _X_NORETURN
 Syntax(void)
 {
     fprintf (stderr, "usage:  %s [-options]\n\n", 
