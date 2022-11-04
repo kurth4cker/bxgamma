@@ -35,6 +35,10 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#ifndef HAVE_STRTOF
+#define strtof(a, n)  (float)atof(a)
+#endif
+
 static char *ProgramName;
 static int MajorVersion, MinorVersion;
 static int EventBase, ErrorBase;
@@ -129,7 +133,7 @@ main(int argc, char *argv[])
 		if (++i >= argc) Syntax ("-gamma requires an argument");
 		if ((rgam >= 0.0f) || (ggam >= 0.0f) || (bgam >= 0.0f))
 		    Syntax ("-gamma cannot be used with -rgamma, -ggamma, or -bgamma");
-		gam = (float)atof(argv[i]);
+		gam = strtof(argv[i], NULL);
 		if ((gam < GAMMA_MIN) || (gam > GAMMA_MAX)) {
 		    fprintf(stderr,
 			    "Gamma values must be between %6.3f and %6.3f\n",
@@ -140,7 +144,7 @@ main(int argc, char *argv[])
 	    } else if (isabbreviation ("-rgamma", arg, 2)) {
 		if (++i >= argc) Syntax ("-rgamma requires an argument");
 		if (gam >= 0.0f) Syntax ("cannot set both -gamma and -rgamma");
-		rgam = (float)atof(argv[i]);
+		rgam = strtof(argv[i], NULL);
 		if ((rgam < GAMMA_MIN) || (rgam > GAMMA_MAX)) {
 		    fprintf(stderr,
 			    "Gamma values must be between %6.3f and %6.3f\n",
@@ -151,7 +155,7 @@ main(int argc, char *argv[])
 	    } else if (isabbreviation ("-ggamma", arg, 2)) {
 		if (++i >= argc) Syntax ("-ggamma requires an argument");
 		if (gam >= 0.0f) Syntax ("cannot set both -gamma and -ggamma");
-		ggam = (float)atof(argv[i]);
+		ggam = strtof(argv[i], NULL);
 		if ((ggam < GAMMA_MIN) || (ggam > GAMMA_MAX)) {
 		    fprintf(stderr,
 			    "Gamma values must be between %6.3f and %6.3f\n",
@@ -162,7 +166,7 @@ main(int argc, char *argv[])
 	    } else if (isabbreviation ("-bgamma", arg, 2)) {
 		if (++i >= argc) Syntax ("-bgamma requires an argument");
 		if (gam >= 0.0f) Syntax ("cannot set both -gamma and -bgamma");
-		bgam = (float)atof(argv[i]);
+		bgam = strtof(argv[i], NULL);
 		if ((bgam < GAMMA_MIN) || (bgam > GAMMA_MAX)) {
 		    fprintf(stderr,
 			    "Gamma values must be between %6.3f and %6.3f\n",

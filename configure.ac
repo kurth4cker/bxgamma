@@ -37,6 +37,8 @@ m4_ifndef([XORG_MACROS_VERSION],
 XORG_MACROS_VERSION(1.8)
 XORG_DEFAULT_OPTIONS
 
+AC_CHECK_FUNCS([strtof])
+
 # Checks for pkg-config packages
 PKG_CHECK_MODULES(XGAMMA, [x11 xxf86vm xproto >= 7.0.17])
 
