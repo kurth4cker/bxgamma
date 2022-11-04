@@ -44,8 +44,8 @@ static int EventBase, ErrorBase;
 #define MINMINOR 0
 
 /* Maximum and Minimum gamma values */
-#define GAMMA_MIN 0.1
-#define GAMMA_MAX 10.0
+#define GAMMA_MIN 0.1f
+#define GAMMA_MAX 10.0f
 
 static void _X_NORETURN
 Syntax(const char *errmsg)
@@ -101,7 +101,7 @@ main(int argc, char *argv[])
     int i, ret;
     char *displayname = NULL;
     Display *dpy;
-    float gam = -1., rgam = -1., ggam = -1., bgam = -1.;
+    float gam = -1.0f, rgam = -1.0f, ggam = -1.0f, bgam = -1.0f;
     XF86VidModeGamma gamma;
     Bool quiet = False;
     int screen = -1;
@@ -127,46 +127,46 @@ main(int argc, char *argv[])
 		continue;
 	    } else if (isabbreviation ("-gamma", arg, 2)) {
 		if (++i >= argc) Syntax ("-gamma requires an argument");
-		if ((rgam >= 0.) || (ggam >= 0.) || (bgam >= 0.))
+		if ((rgam >= 0.0f) || (ggam >= 0.0f) || (bgam >= 0.0f))
 		    Syntax ("-gamma cannot be used with -rgamma, -ggamma, or -bgamma");
 		gam = (float)atof(argv[i]);
 		if ((gam < GAMMA_MIN) || (gam > GAMMA_MAX)) {
 		    fprintf(stderr,
 			    "Gamma values must be between %6.3f and %6.3f\n",
-			    GAMMA_MIN, GAMMA_MAX);
+			    (double)GAMMA_MIN, (double)GAMMA_MAX);
 		    exit(1);
 		}
 		continue;
 	    } else if (isabbreviation ("-rgamma", arg, 2)) {
 		if (++i >= argc) Syntax ("-rgamma requires an argument");
-		if (gam >= 0.) Syntax ("cannot set both -gamma and -rgamma");
+		if (gam >= 0.0f) Syntax ("cannot set both -gamma and -rgamma");
 		rgam = (float)atof(argv[i]);
 		if ((rgam < GAMMA_MIN) || (rgam > GAMMA_MAX)) {
 		    fprintf(stderr,
 			    "Gamma values must be between %6.3f and %6.3f\n",
-			    GAMMA_MIN, GAMMA_MAX);
+			    (double)GAMMA_MIN, (double)GAMMA_MAX);
 		    exit(1);
 		}
 		continue;
 	    } else if (isabbreviation ("-ggamma", arg, 2)) {
 		if (++i >= argc) Syntax ("-ggamma requires an argument");
-		if (gam >= 0.) Syntax ("cannot set both -gamma and -ggamma");
+		if (gam >= 0.0f) Syntax ("cannot set both -gamma and -ggamma");
 		ggam = (float)atof(argv[i]);
 		if ((ggam < GAMMA_MIN) || (ggam > GAMMA_MAX)) {
 		    fprintf(stderr,
 			    "Gamma values must be between %6.3f and %6.3f\n",
-			    GAMMA_MIN, GAMMA_MAX);
+			    (double)GAMMA_MIN, (double)GAMMA_MAX);
 		    exit(1);
 		}
 		continue;
 	    } else if (isabbreviation ("-bgamma", arg, 2)) {
 		if (++i >= argc) Syntax ("-bgamma requires an argument");
-		if (gam >= 0.) Syntax ("cannot set both -gamma and -bgamma");
+		if (gam >= 0.0f) Syntax ("cannot set both -gamma and -bgamma");
 		bgam = (float)atof(argv[i]);
 		if ((bgam < GAMMA_MIN) || (bgam > GAMMA_MAX)) {
 		    fprintf(stderr,
 			    "Gamma values must be between %6.3f and %6.3f\n",
-			    GAMMA_MIN, GAMMA_MAX);
+			    (double)GAMMA_MIN, (double)GAMMA_MAX);
 		    exit(1);
 		}
 		continue;
@@ -216,11 +216,11 @@ main(int argc, char *argv[])
 	XCloseDisplay (dpy);
 	exit (2);
     } else if (!quiet)
-	fprintf(stderr, "-> Red %6.3f, Green %6.3f, Blue %6.3f\n", gamma.red,
-		gamma.green, gamma.blue);
+	fprintf(stderr, "-> Red %6.3f, Green %6.3f, Blue %6.3f\n",
+		(double)gamma.red, (double)gamma.green, (double)gamma.blue);
 
     ret = 0;
-    if (gam >= 0.) {
+    if (gam >= 0.0f) {
 	gamma.red = gam;
 	gamma.green = gam;
 	gamma.blue = gam;
@@ -233,12 +233,13 @@ main(int argc, char *argv[])
 		ret = 2;
 	    } else if (!quiet)
 		fprintf(stderr, "<- Red %6.3f, Green %6.3f, Blue %6.3f\n",
-		        gamma.red, gamma.green, gamma.blue);
+			(double)gamma.red, (double)gamma.green,
+			(double)gamma.blue);
 	}
-    } else if ((rgam >= 0.) || (ggam >= 0.) || (bgam >= 0.)) {
-	if (rgam >= 0.) gamma.red = rgam;
-	if (ggam >= 0.) gamma.green = ggam;
-	if (bgam >= 0.) gamma.blue = bgam;
+    } else if ((rgam >= 0.0f) || (ggam >= 0.0f) || (bgam >= 0.0f)) {
+	if (rgam >= 0.0f) gamma.red = rgam;
+	if (ggam >= 0.0f) gamma.green = ggam;
+	if (bgam >= 0.0f) gamma.blue = bgam;
 	if (!XF86VidModeSetGamma(dpy, screen, &gamma)) {
 	    fprintf(stderr, "Unable to set gamma correction\n");
 	    ret = 2;
@@ -248,7 +249,8 @@ main(int argc, char *argv[])
 		ret = 2;
 	    } else if (!quiet)
 		fprintf(stderr, "<- Red %6.3f, Green %6.3f, Blue %6.3f\n",
-		        gamma.red, gamma.green, gamma.blue);
+		        (double)gamma.red, (double)gamma.green,
+			(double)gamma.blue);
 	}
     }
 
