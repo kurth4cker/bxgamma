@@ -98,7 +98,7 @@ isabbreviation(const char *arg, const char *s, size_t minslen)
 int
 main(int argc, char *argv[])
 {
-    int i, ret;
+    int ret = 2;
     char *displayname = NULL;
     Display *dpy;
     float gam = -1.0f, rgam = -1.0f, ggam = -1.0f, bgam = -1.0f;
@@ -107,7 +107,7 @@ main(int argc, char *argv[])
     int screen = -1;
 
     ProgramName = argv[0];
-    for (i = 1; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
 	char *arg = argv[i];
 
 	if (arg[0] == '-') {
@@ -192,12 +192,12 @@ main(int argc, char *argv[])
 
     if (!XF86VidModeQueryVersion(dpy, &MajorVersion, &MinorVersion)) {
 	fprintf(stderr, "Unable to query video extension version\n");
-	exit(2);
+	goto finish;
     }
 
     if (!XF86VidModeQueryExtension(dpy, &EventBase, &ErrorBase)) {
 	fprintf(stderr, "Unable to query video extension information\n");
-	exit(2);
+	goto finish;
     }
 
     /* Fail if the extension version in the server is too old */
@@ -208,52 +208,47 @@ main(int argc, char *argv[])
 		" (%d.%d)\n", MajorVersion, MinorVersion);
 	fprintf(stderr, "Minimum required version is %d.%d\n",
 		MINMAJOR, MINMINOR);
-	exit(2);
+	goto finish;
     }
 
     if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
 	fprintf(stderr, "Unable to query gamma correction\n");
-	XCloseDisplay (dpy);
-	exit (2);
+	goto finish;
     } else if (!quiet)
 	fprintf(stderr, "-> Red %6.3f, Green %6.3f, Blue %6.3f\n",
 		(double)gamma.red, (double)gamma.green, (double)gamma.blue);
 
-    ret = 0;
     if (gam >= 0.0f) {
 	gamma.red = gam;
 	gamma.green = gam;
 	gamma.blue = gam;
-	if (!XF86VidModeSetGamma(dpy, screen, &gamma)) {
-	    fprintf(stderr, "Unable to set gamma correction\n");
-	    ret = 2;
-	} else {
-	    if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
-		fprintf(stderr, "Unable to query gamma correction\n");
-		ret = 2;
-	    } else if (!quiet)
-		fprintf(stderr, "<- Red %6.3f, Green %6.3f, Blue %6.3f\n",
-			(double)gamma.red, (double)gamma.green,
-			(double)gamma.blue);
-	}
     } else if ((rgam >= 0.0f) || (ggam >= 0.0f) || (bgam >= 0.0f)) {
 	if (rgam >= 0.0f) gamma.red = rgam;
 	if (ggam >= 0.0f) gamma.green = ggam;
 	if (bgam >= 0.0f) gamma.blue = bgam;
-	if (!XF86VidModeSetGamma(dpy, screen, &gamma)) {
-	    fprintf(stderr, "Unable to set gamma correction\n");
-	    ret = 2;
+    } else {
+	/* Not changing gamma, all done */
+	ret = 0;
+	goto finish;
+    }
+
+    /* Change gamma now */
+    if (!XF86VidModeSetGamma(dpy, screen, &gamma)) {
+	fprintf(stderr, "Unable to set gamma correction\n");
+    } else {
+	if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
+	    fprintf(stderr, "Unable to query gamma correction\n");
 	} else {
-	    if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
-		fprintf(stderr, "Unable to query gamma correction\n");
-		ret = 2;
-	    } else if (!quiet)
+	    ret = 0; /* Success! */
+	    if (!quiet) {
 		fprintf(stderr, "<- Red %6.3f, Green %6.3f, Blue %6.3f\n",
-		        (double)gamma.red, (double)gamma.green,
+			(double)gamma.red, (double)gamma.green,
 			(double)gamma.blue);
+	    }
 	}
     }
 
+  finish:
     XCloseDisplay (dpy);
     exit (ret);
 }
