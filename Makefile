@@ -1,6 +1,6 @@
 .POSIX:
 
-NAME = xgamma
+NAME = gamma
 VERSION = 1.0.8a
 
 CC = cc
@@ -9,7 +9,7 @@ CPPFLAGS = -DPACKAGE_STRING='"$(NAME) $(VERSION)"'
 LDLIBS = -lX11 -lXxf86vm
 
 PROG = $(NAME)
-SRC = xgamma.c
+SRC = gamma.c
 
 all: $(PROG)
 
