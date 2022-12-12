@@ -22,10 +22,6 @@
  * Written by David Bateman
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
 #include <stdio.h>
 #include <errno.h>
 #include <X11/Xos.h>
@@ -35,13 +31,9 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-#ifndef HAVE_STRTOF
-#define strtof(a, n)  (float)atof(a)
-#endif
-
-static char *ProgramName;
-static int MajorVersion, MinorVersion;
-static int EventBase, ErrorBase;
+static char *program_name;
+static int major_version, minor_version;
+static int event_base, error_base;
 
 /* Minimum extension version required */
 #define MINMAJOR 2
@@ -51,24 +43,24 @@ static int EventBase, ErrorBase;
 #define GAMMA_MIN 0.1f
 #define GAMMA_MAX 10.0f
 
-static void _X_NORETURN
-Syntax(const char *errmsg)
+static void
+syntax(const char *errmsg)
 {
-    if (errmsg != NULL)
-        fprintf (stderr, "%s: %s\n\n", ProgramName, errmsg);
+	if (errmsg != NULL)
+		fprintf (stderr, "%s: %s\n\n", program_name, errmsg);
 
-    fprintf (stderr, "usage:  %s [-options]\n\n%s", ProgramName,
-             "where the available options are:\n"
-             "    -display host:dpy       or -d\n"
-             "    -quiet                  or -q\n"
-             "    -screen                 or -s\n"
-             "    -version                or -v\n"
-             "    -gamma f.f              Gamma Value\n"
-             "    -rgamma f.f             Red Gamma Value\n"
-             "    -ggamma f.f             Green Gamma Value\n"
-             "    -bgamma f.f             Blue Gamma Value\n\n"
-             "If no gamma is specified, returns the current setting\n");
-    exit (1);
+	fprintf (stderr, "usage:  %s [-options]\n\n%s", program_name,
+"where the available options are:\n"
+"    -display host:dpy       or -d\n"
+"    -quiet                  or -q\n"
+"    -screen                 or -s\n"
+"    -version                or -v\n"
+"    -gamma f.f              Gamma Value\n"
+"    -rgamma f.f             Red Gamma Value\n"
+"    -ggamma f.f             Green Gamma Value\n"
+"    -bgamma f.f             Blue Gamma Value\n\n"
+"If no gamma is specified, returns the current setting\n");
+	exit (1);
 }
 
 
@@ -77,26 +69,26 @@ Syntax(const char *errmsg)
  * whether or not the given string is an abbreviation of the arg.
  */
 
-static Bool 
+static int 
 isabbreviation(const char *arg, const char *s, size_t minslen)
 {
-    size_t arglen;
-    size_t slen;
+	size_t arglen;
+	size_t slen;
 
-    /* exact match */
-    if (strcmp (arg, s) == 0) return (True);
+	/* exact match */
+	if (strcmp (arg, s) == 0) return (True);
 
-    arglen = strlen (arg);
-    slen = strlen (s);
+	arglen = strlen (arg);
+	slen = strlen (s);
 
-    /* too long or too short */
-    if (slen >= arglen || slen < minslen) return (False);
+	/* too long or too short */
+	if (slen >= arglen || slen < minslen) return (False);
 
-    /* abbreviation */
-    if (strncmp (arg, s, slen) == 0) return (True);
+	/* abbreviation */
+	if (strncmp (arg, s, slen) == 0) return (True);
 
-    /* bad */
-    return (False);
+	/* bad */
+	return (False);
 }
 
 int
@@ -110,13 +102,13 @@ main(int argc, char *argv[])
     Bool quiet = False;
     int screen = -1;
 
-    ProgramName = argv[0];
+    program_name = argv[0];
     for (int i = 1; i < argc; i++) {
 	char *arg = argv[i];
 
 	if (arg[0] == '-') {
 	    if (isabbreviation ("-display", arg, 1)) {
-		if (++i >= argc) Syntax ("-display requires an argument");
+		if (++i >= argc) syntax ("-display requires an argument");
 		displayname = argv[i];
 		continue;
 	    } else if (isabbreviation ("-quiet", arg, 1)) {
@@ -126,13 +118,13 @@ main(int argc, char *argv[])
 		puts(PACKAGE_STRING);
 		exit(0);
 	    } else if (isabbreviation ("-screen", arg, 1)) {
-		if (++i >= argc) Syntax ("-screen requires an argument");
+		if (++i >= argc) syntax ("-screen requires an argument");
 		screen = atoi(argv[i]);
 		continue;
 	    } else if (isabbreviation ("-gamma", arg, 2)) {
-		if (++i >= argc) Syntax ("-gamma requires an argument");
+		if (++i >= argc) syntax ("-gamma requires an argument");
 		if ((rgam >= 0.0f) || (ggam >= 0.0f) || (bgam >= 0.0f))
-		    Syntax ("-gamma cannot be used with -rgamma, -ggamma, or -bgamma");
+		    syntax ("-gamma cannot be used with -rgamma, -ggamma, or -bgamma");
 		gam = strtof(argv[i], NULL);
 		if ((gam < GAMMA_MIN) || (gam > GAMMA_MAX)) {
 		    fprintf(stderr,
@@ -142,8 +134,8 @@ main(int argc, char *argv[])
 		}
 		continue;
 	    } else if (isabbreviation ("-rgamma", arg, 2)) {
-		if (++i >= argc) Syntax ("-rgamma requires an argument");
-		if (gam >= 0.0f) Syntax ("cannot set both -gamma and -rgamma");
+		if (++i >= argc) syntax ("-rgamma requires an argument");
+		if (gam >= 0.0f) syntax ("cannot set both -gamma and -rgamma");
 		rgam = strtof(argv[i], NULL);
 		if ((rgam < GAMMA_MIN) || (rgam > GAMMA_MAX)) {
 		    fprintf(stderr,
@@ -153,8 +145,8 @@ main(int argc, char *argv[])
 		}
 		continue;
 	    } else if (isabbreviation ("-ggamma", arg, 2)) {
-		if (++i >= argc) Syntax ("-ggamma requires an argument");
-		if (gam >= 0.0f) Syntax ("cannot set both -gamma and -ggamma");
+		if (++i >= argc) syntax ("-ggamma requires an argument");
+		if (gam >= 0.0f) syntax ("cannot set both -gamma and -ggamma");
 		ggam = strtof(argv[i], NULL);
 		if ((ggam < GAMMA_MIN) || (ggam > GAMMA_MAX)) {
 		    fprintf(stderr,
@@ -164,8 +156,8 @@ main(int argc, char *argv[])
 		}
 		continue;
 	    } else if (isabbreviation ("-bgamma", arg, 2)) {
-		if (++i >= argc) Syntax ("-bgamma requires an argument");
-		if (gam >= 0.0f) Syntax ("cannot set both -gamma and -bgamma");
+		if (++i >= argc) syntax ("-bgamma requires an argument");
+		if (gam >= 0.0f) syntax ("cannot set both -gamma and -bgamma");
 		bgam = strtof(argv[i], NULL);
 		if ((bgam < GAMMA_MIN) || (bgam > GAMMA_MAX)) {
 		    fprintf(stderr,
@@ -177,39 +169,39 @@ main(int argc, char *argv[])
 	    } else {
 		if (!isabbreviation ("-help", arg, 1))
 		    fprintf (stderr, "%s: unrecognized argument %s\n\n",
-			     ProgramName, arg);
-		Syntax (NULL);
+			     program_name, arg);
+		syntax (NULL);
 	    }
 	} else {
 	    fprintf (stderr, "%s: unrecognized argument %s\n\n",
-		     ProgramName, arg);
-	    Syntax (NULL);
+		     program_name, arg);
+	    syntax (NULL);
 	}
     }
 
     if ((dpy = XOpenDisplay(displayname)) == NULL) {
 	fprintf (stderr, "%s:  unable to open display '%s'\n",
-		 ProgramName, XDisplayName (displayname));
+		 program_name, XDisplayName (displayname));
 	exit(1);
     } else if (screen == -1)
 	screen = DefaultScreen(dpy);
 
-    if (!XF86VidModeQueryVersion(dpy, &MajorVersion, &MinorVersion)) {
+    if (!XF86VidModeQueryVersion(dpy, &major_version, &minor_version)) {
 	fprintf(stderr, "Unable to query video extension version\n");
 	goto finish;
     }
 
-    if (!XF86VidModeQueryExtension(dpy, &EventBase, &ErrorBase)) {
+    if (!XF86VidModeQueryExtension(dpy, &event_base, &error_base)) {
 	fprintf(stderr, "Unable to query video extension information\n");
 	goto finish;
     }
 
     /* Fail if the extension version in the server is too old */
-    if (MajorVersion < MINMAJOR || 
-	(MajorVersion == MINMAJOR && MinorVersion < MINMINOR)) {
+    if (major_version < MINMAJOR ||
+	(major_version == MINMAJOR && minor_version < MINMINOR)) {
 	fprintf(stderr,
 		"Xserver is running an old XFree86-VidModeExtension version"
-		" (%d.%d)\n", MajorVersion, MinorVersion);
+		" (%d.%d)\n", major_version, minor_version);
 	fprintf(stderr, "Minimum required version is %d.%d\n",
 		MINMAJOR, MINMINOR);
 	goto finish;
@@ -252,8 +244,7 @@ main(int argc, char *argv[])
 	}
     }
 
-  finish:
+finish:
     XCloseDisplay (dpy);
     exit (ret);
 }
-
