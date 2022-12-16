@@ -1,7 +1,7 @@
 .POSIX:
 
 NAME = gamma
-VERSION = 1.0.8a
+VERSION = 0.1.0a
 
 CC = cc
 

@@ -22,6 +22,8 @@
  * Written by David Bateman
  */
 
+#define _POSIX_C_SOURCE 200809L
+
 #include <stdio.h>
 #include <errno.h>
 #include <X11/Xos.h>
@@ -92,159 +94,98 @@ isabbreviation(const char *arg, const char *s, size_t minslen)
 }
 
 int
-main(int argc, char *argv[])
+main(int argc, char **argv)
 {
-    int ret = 2;
-    char *displayname = NULL;
-    Display *dpy;
-    float gam = -1.0f, rgam = -1.0f, ggam = -1.0f, bgam = -1.0f;
-    XF86VidModeGamma gamma;
-    Bool quiet = False;
-    int screen = -1;
+	int ret = 2;
+	char *displayname = NULL;
+	Display *dpy;
+	float bgam = -1.0f;
+	XF86VidModeGamma gamma;
+	int quiet = 0;
+	int screen = -1;
+	int ch;
 
-    program_name = argv[0];
-    for (int i = 1; i < argc; i++) {
-	char *arg = argv[i];
+	program_name = argv[0];
 
-	if (arg[0] == '-') {
-	    if (isabbreviation ("-display", arg, 1)) {
-		if (++i >= argc) syntax ("-display requires an argument");
-		displayname = argv[i];
-		continue;
-	    } else if (isabbreviation ("-quiet", arg, 1)) {
-		quiet = True;
-		continue;
-	    } else if (isabbreviation ("-version", arg, 1)) {
-		puts(PACKAGE_STRING);
-		exit(0);
-	    } else if (isabbreviation ("-screen", arg, 1)) {
-		if (++i >= argc) syntax ("-screen requires an argument");
-		screen = atoi(argv[i]);
-		continue;
-	    } else if (isabbreviation ("-gamma", arg, 2)) {
-		if (++i >= argc) syntax ("-gamma requires an argument");
-		if ((rgam >= 0.0f) || (ggam >= 0.0f) || (bgam >= 0.0f))
-		    syntax ("-gamma cannot be used with -rgamma, -ggamma, or -bgamma");
-		gam = strtof(argv[i], NULL);
-		if ((gam < GAMMA_MIN) || (gam > GAMMA_MAX)) {
-		    fprintf(stderr,
-			    "Gamma values must be between %6.3f and %6.3f\n",
-			    (double)GAMMA_MIN, (double)GAMMA_MAX);
-		    exit(1);
+	while ((ch = getopt(argc, argv, "d:s:qv")) != -1)
+		switch (ch) {
+		case 'd':
+			if (!optarg)
+				syntax("-d requires an argument");
+			displayname = optarg;
+			break;
+		case 's':
+			if (!optarg)
+				syntax("-s requires an argument");
+			screen = atoi(optarg);
+			break;
+		case 'q':
+			quiet = 1;
+			break;
+		case 'v':
+			puts(PACKAGE_STRING);
+			return 0;
+		case 'h':
+			syntax(NULL);
 		}
-		continue;
-	    } else if (isabbreviation ("-rgamma", arg, 2)) {
-		if (++i >= argc) syntax ("-rgamma requires an argument");
-		if (gam >= 0.0f) syntax ("cannot set both -gamma and -rgamma");
-		rgam = strtof(argv[i], NULL);
-		if ((rgam < GAMMA_MIN) || (rgam > GAMMA_MAX)) {
-		    fprintf(stderr,
-			    "Gamma values must be between %6.3f and %6.3f\n",
-			    (double)GAMMA_MIN, (double)GAMMA_MAX);
-		    exit(1);
-		}
-		continue;
-	    } else if (isabbreviation ("-ggamma", arg, 2)) {
-		if (++i >= argc) syntax ("-ggamma requires an argument");
-		if (gam >= 0.0f) syntax ("cannot set both -gamma and -ggamma");
-		ggam = strtof(argv[i], NULL);
-		if ((ggam < GAMMA_MIN) || (ggam > GAMMA_MAX)) {
-		    fprintf(stderr,
-			    "Gamma values must be between %6.3f and %6.3f\n",
-			    (double)GAMMA_MIN, (double)GAMMA_MAX);
-		    exit(1);
-		}
-		continue;
-	    } else if (isabbreviation ("-bgamma", arg, 2)) {
-		if (++i >= argc) syntax ("-bgamma requires an argument");
-		if (gam >= 0.0f) syntax ("cannot set both -gamma and -bgamma");
-		bgam = strtof(argv[i], NULL);
-		if ((bgam < GAMMA_MIN) || (bgam > GAMMA_MAX)) {
-		    fprintf(stderr,
-			    "Gamma values must be between %6.3f and %6.3f\n",
-			    (double)GAMMA_MIN, (double)GAMMA_MAX);
-		    exit(1);
-		}
-		continue;
-	    } else {
-		if (!isabbreviation ("-help", arg, 1))
-		    fprintf (stderr, "%s: unrecognized argument %s\n\n",
-			     program_name, arg);
-		syntax (NULL);
-	    }
-	} else {
-	    fprintf (stderr, "%s: unrecognized argument %s\n\n",
-		     program_name, arg);
-	    syntax (NULL);
+
+	if (optind < argc)
+		bgam = strtof(argv[optind], NULL);
+
+	if ((dpy = XOpenDisplay(displayname)) == NULL) {
+		fprintf (stderr, "%s:  unable to open display '%s'\n",
+				program_name, XDisplayName (displayname));
+		exit(1);
+	} else if (screen == -1)
+		screen = DefaultScreen(dpy);
+
+	if (!XF86VidModeQueryVersion(dpy, &major_version, &minor_version)) {
+		fprintf(stderr, "Unable to query video extension version\n");
+		goto finish;
 	}
-    }
 
-    if ((dpy = XOpenDisplay(displayname)) == NULL) {
-	fprintf (stderr, "%s:  unable to open display '%s'\n",
-		 program_name, XDisplayName (displayname));
-	exit(1);
-    } else if (screen == -1)
-	screen = DefaultScreen(dpy);
+	if (!XF86VidModeQueryExtension(dpy, &event_base, &error_base)) {
+		fprintf(stderr, "Unable to query video extension information\n");
+		goto finish;
+	}
 
-    if (!XF86VidModeQueryVersion(dpy, &major_version, &minor_version)) {
-	fprintf(stderr, "Unable to query video extension version\n");
-	goto finish;
-    }
+	/* Fail if the extension version in the server is too old */
+	if (major_version < MINMAJOR ||
+			(major_version == MINMAJOR && minor_version < MINMINOR)) {
+		fprintf(stderr,
+				"Xserver is running an old XFree86-VidModeExtension version"
+				" (%d.%d)\n", major_version, minor_version);
+		fprintf(stderr, "Minimum required version is %d.%d\n",
+				MINMAJOR, MINMINOR);
+		goto finish;
+	}
 
-    if (!XF86VidModeQueryExtension(dpy, &event_base, &error_base)) {
-	fprintf(stderr, "Unable to query video extension information\n");
-	goto finish;
-    }
-
-    /* Fail if the extension version in the server is too old */
-    if (major_version < MINMAJOR ||
-	(major_version == MINMAJOR && minor_version < MINMINOR)) {
-	fprintf(stderr,
-		"Xserver is running an old XFree86-VidModeExtension version"
-		" (%d.%d)\n", major_version, minor_version);
-	fprintf(stderr, "Minimum required version is %d.%d\n",
-		MINMAJOR, MINMINOR);
-	goto finish;
-    }
-
-    if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
-	fprintf(stderr, "Unable to query gamma correction\n");
-	goto finish;
-    } else if (!quiet)
-	fprintf(stderr, "-> Red %6.3f, Green %6.3f, Blue %6.3f\n",
-		(double)gamma.red, (double)gamma.green, (double)gamma.blue);
-
-    if (gam >= 0.0f) {
-	gamma.red = gam;
-	gamma.green = gam;
-	gamma.blue = gam;
-    } else if ((rgam >= 0.0f) || (ggam >= 0.0f) || (bgam >= 0.0f)) {
-	if (rgam >= 0.0f) gamma.red = rgam;
-	if (ggam >= 0.0f) gamma.green = ggam;
-	if (bgam >= 0.0f) gamma.blue = bgam;
-    } else {
-	/* Not changing gamma, all done */
-	ret = 0;
-	goto finish;
-    }
-
-    /* Change gamma now */
-    if (!XF86VidModeSetGamma(dpy, screen, &gamma)) {
-	fprintf(stderr, "Unable to set gamma correction\n");
-    } else {
 	if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
-	    fprintf(stderr, "Unable to query gamma correction\n");
-	} else {
-	    ret = 0; /* Success! */
-	    if (!quiet) {
-		fprintf(stderr, "<- Red %6.3f, Green %6.3f, Blue %6.3f\n",
-			(double)gamma.red, (double)gamma.green,
-			(double)gamma.blue);
-	    }
+		fprintf(stderr, "Unable to query gamma correction\n");
+		goto finish;
+	} else if (!quiet)
+		printf("blue: %6.3f\n", (double)gamma.blue);
+
+	if (bgam >= 0.0f)
+		gamma.blue = bgam;
+	else {
+		/* Not changing gamma, all done */
+		ret = 0;
+		goto finish;
 	}
-    }
+
+	/* Change gamma now */
+	if (!XF86VidModeSetGamma(dpy, screen, &gamma))
+		fprintf(stderr, "Unable to set gamma correction\n");
+	else if (!XF86VidModeGetGamma(dpy, screen, &gamma))
+		fprintf(stderr, "Unable to query gamma correction\n");
+	else {
+		ret = 0; /* Success! */
+		if (!quiet) {
+			printf("blue: %6.3f\n",	(double)gamma.blue);
+		}
+	}
 
 finish:
-    XCloseDisplay (dpy);
-    exit (ret);
-}
+	XCloseDisplay (dpy);
+	return ret;
