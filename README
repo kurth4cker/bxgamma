@@ -2,17 +2,12 @@ bxgamma allows X users to query and alter the blue gamma correction of a
 monitor via the X video mode extension (XFree86-VidModeExtension).
 
 All questions regarding this software should be directed at the
-Xorg mailing list:
+Codeberg issues:
 
-  https://lists.x.org/mailman/listinfo/xorg
+  https://codeberg.org/kurth4cker/bxgamma/issues
 
 The master development code repository can be found at:
 
-  https://gitlab.freedesktop.org/xorg/app/xgamma
+  https://codeberg.org/kurth4cker/bxgamma
 
 Please submit bug reports and requests to merge patches there.
-
-For patch submission instructions, see:
-
-  https://www.x.org/wiki/Development/Documentation/SubmittingPatches
-
