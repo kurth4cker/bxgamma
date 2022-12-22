@@ -1,4 +1,4 @@
-xgamma allows X users to query and alter the gamma correction of a
+bxgamma allows X users to query and alter the blue gamma correction of a
 monitor via the X video mode extension (XFree86-VidModeExtension).
 
 All questions regarding this software should be directed at the
