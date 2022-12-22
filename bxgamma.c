@@ -83,8 +83,14 @@ main(int argc, char **argv)
 			syntax(NULL);
 		}
 
-	if (optind < argc)
+	if (optind < argc) {
 		bgam = strtof(argv[optind], NULL);
+		if (bgam < GAMMA_MIN || bgam > GAMMA_MAX) {
+			fprintf(stderr, "gamma values must be between %6.3f and %6.3f\n",
+					(double)GAMMA_MIN, (double)GAMMA_MAX);
+			return 1;
+		}
+	}
 
 	if ((dpy = XOpenDisplay(displayname)) == NULL) {
 		fprintf (stderr, "%s:  unable to open display '%s'\n",
@@ -120,7 +126,7 @@ main(int argc, char **argv)
 		goto finish;
 	}
 	else if (!quiet)
-		printf("blue: %6.3f\n", (double)gamma.blue);
+		printf("blue: %.3f\n", (double)gamma.blue);
 
 	if (bgam >= 0.0f)
 		gamma.blue = bgam;
