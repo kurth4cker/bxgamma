@@ -65,34 +65,6 @@ syntax(const char *errmsg)
 	exit (1);
 }
 
-
-/*
- * The following is a hack until XrmParseCommand is ready.  It determines
- * whether or not the given string is an abbreviation of the arg.
- */
-
-static int 
-isabbreviation(const char *arg, const char *s, size_t minslen)
-{
-	size_t arglen;
-	size_t slen;
-
-	/* exact match */
-	if (strcmp (arg, s) == 0) return (True);
-
-	arglen = strlen (arg);
-	slen = strlen (s);
-
-	/* too long or too short */
-	if (slen >= arglen || slen < minslen) return (False);
-
-	/* abbreviation */
-	if (strncmp (arg, s, slen) == 0) return (True);
-
-	/* bad */
-	return (False);
-}
-
 int
 main(int argc, char **argv)
 {
@@ -189,3 +161,4 @@ main(int argc, char **argv)
 finish:
 	XCloseDisplay (dpy);
 	return ret;
+}

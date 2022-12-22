@@ -1,15 +1,16 @@
 .POSIX:
 
-NAME = gamma
+NAME = bxgamma
 VERSION = 0.1.0a
 
 CC = cc
 
-CPPFLAGS = -DPACKAGE_STRING='"$(NAME) $(VERSION)"'
-LDLIBS = -lX11 -lXxf86vm
+GAMMA_CPPFLAGS = -DPACKAGE_STRING='"$(NAME) $(VERSION)"' $(CPPFLAGS)
+GAMMA_CFLAGS = -std=c99 $(CFLAGS)
+GAMMA_LIBS = -lX11 -lXxf86vm $(LDLIBS)
 
 PROG = $(NAME)
-SRC = gamma.c
+SRC = bxgamma.c
 
 all: $(PROG)
 
@@ -18,4 +19,4 @@ clean:
 
 .SUFFIXES: .c
 .c:
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ $< $(LDLIBS)
+	$(CC) $(GAMMA_CFLAGS) $(GAMMA_CPPFLAGS) $(LDFLAGS) -o $@ $< $(GAMMA_LIBS)
