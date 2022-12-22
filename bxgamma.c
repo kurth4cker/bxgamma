@@ -45,25 +45,7 @@ static int event_base, error_base;
 #define GAMMA_MIN 0.1f
 #define GAMMA_MAX 10.0f
 
-static void
-syntax(const char *errmsg)
-{
-	if (errmsg != NULL)
-		fprintf (stderr, "%s: %s\n\n", program_name, errmsg);
-
-	fprintf (stderr, "usage:  %s [-options]\n\n%s", program_name,
-"where the available options are:\n"
-"    -display host:dpy       or -d\n"
-"    -quiet                  or -q\n"
-"    -screen                 or -s\n"
-"    -version                or -v\n"
-"    -gamma f.f              Gamma Value\n"
-"    -rgamma f.f             Red Gamma Value\n"
-"    -ggamma f.f             Green Gamma Value\n"
-"    -bgamma f.f             Blue Gamma Value\n\n"
-"If no gamma is specified, returns the current setting\n");
-	exit (1);
-}
+#define syntax(x) exit(0)
 
 int
 main(int argc, char **argv)
@@ -79,7 +61,7 @@ main(int argc, char **argv)
 
 	program_name = argv[0];
 
-	while ((ch = getopt(argc, argv, "d:s:qv")) != -1)
+	while ((ch = getopt(argc, argv, "d:s:qhv")) != -1)
 		switch (ch) {
 		case 'd':
 			if (!optarg)
@@ -108,7 +90,8 @@ main(int argc, char **argv)
 		fprintf (stderr, "%s:  unable to open display '%s'\n",
 				program_name, XDisplayName (displayname));
 		exit(1);
-	} else if (screen == -1)
+	}
+	else if (screen == -1)
 		screen = DefaultScreen(dpy);
 
 	if (!XF86VidModeQueryVersion(dpy, &major_version, &minor_version)) {
@@ -135,7 +118,8 @@ main(int argc, char **argv)
 	if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
 		fprintf(stderr, "Unable to query gamma correction\n");
 		goto finish;
-	} else if (!quiet)
+	}
+	else if (!quiet)
 		printf("blue: %6.3f\n", (double)gamma.blue);
 
 	if (bgam >= 0.0f)
