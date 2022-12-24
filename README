@@ -1,13 +1,35 @@
+bxgamma
+=======
 bxgamma allows X users to query and alter the blue gamma correction of a
 monitor via the X video mode extension (XFree86-VidModeExtension).
 
-All questions regarding this software should be directed at the
-Codeberg issues:
+bxgamma is fork of xgamma[1] for just changing blue gamma. like blue
+light filters.
 
-  https://codeberg.org/kurth4cker/bxgamma/issues
+Requirements
+------------
+For building, you need C compiler and posix make.
+You need also libX11 and libXxf86vm.
 
+Installation
+------------
+Just standard simple makefile. run `make install`. You can also specify
+some variables like DESTDIR, PREFIX and BINDIR.
+
+Usage
+-----
+Just run with your wanted gamma correction. Like:
+
+	bxgamma 0.7
+
+Development
+-----------
 The master development code repository can be found at:
 
   https://codeberg.org/kurth4cker/bxgamma
 
 Please submit bug reports and requests to merge patches there.
+
+Homepage
+--------
+https://kurth4cker.codeberg.page/bxgamma
