@@ -24,14 +24,13 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#include <ctype.h>
 #include <stdio.h>
-#include <errno.h>
-#include <X11/Xos.h>
+#include <stdlib.h>
 #include <X11/Xlib.h>
+#include <X11/Xos.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/xf86vmode.h>
-#include <ctype.h>
-#include <stdlib.h>
 
 static char *program_name;
 static int major_version, minor_version;
@@ -44,8 +43,6 @@ static int event_base, error_base;
 /* Maximum and Minimum gamma values */
 #define GAMMA_MIN 0.1f
 #define GAMMA_MAX 10.0f
-
-#define syntax(x) exit(0)
 
 int
 main(int argc, char **argv)
@@ -65,12 +62,12 @@ main(int argc, char **argv)
 		switch (ch) {
 		case 'd':
 			if (!optarg)
-				syntax("-d requires an argument");
+				return 1;
 			displayname = optarg;
 			break;
 		case 's':
 			if (!optarg)
-				syntax("-s requires an argument");
+				return 1;
 			screen = atoi(optarg);
 			break;
 		case 'q':
@@ -80,7 +77,8 @@ main(int argc, char **argv)
 			puts(PACKAGE_STRING);
 			return 0;
 		case 'h':
-			syntax(NULL);
+			puts("see bxgamma(1)");
+			return 0;
 		}
 
 	if (optind < argc) {
@@ -95,7 +93,7 @@ main(int argc, char **argv)
 	if ((dpy = XOpenDisplay(displayname)) == NULL) {
 		fprintf (stderr, "%s:  unable to open display '%s'\n",
 				program_name, XDisplayName (displayname));
-		exit(1);
+		return 1;
 	}
 	else if (screen == -1)
 		screen = DefaultScreen(dpy);
@@ -143,9 +141,8 @@ main(int argc, char **argv)
 		fprintf(stderr, "Unable to query gamma correction\n");
 	else {
 		ret = 0; /* Success! */
-		if (!quiet) {
+		if (!quiet)
 			printf("blue: %6.3f\n",	(double)gamma.blue);
-		}
 	}
 
 finish:
