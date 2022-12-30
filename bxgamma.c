@@ -27,12 +27,13 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/xf86vmode.h>
 
-static char *program_name;
 static int major_version, minor_version;
 static int event_base, error_base;
 
@@ -55,8 +56,6 @@ main(int argc, char **argv)
 	int quiet = 0;
 	int screen = -1;
 	int ch;
-
-	program_name = argv[0];
 
 	while ((ch = getopt(argc, argv, "d:s:qhv")) != -1)
 		switch (ch) {
@@ -92,7 +91,7 @@ main(int argc, char **argv)
 
 	if ((dpy = XOpenDisplay(displayname)) == NULL) {
 		fprintf (stderr, "%s:  unable to open display '%s'\n",
-				program_name, XDisplayName (displayname));
+				argv[0], XDisplayName (displayname));
 		return 1;
 	}
 	else if (screen == -1)
