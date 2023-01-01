@@ -74,10 +74,10 @@ main(int argc, char **argv)
 			break;
 		case 'v':
 			puts(PACKAGE_STRING);
-			return 0;
+			break;
 		case 'h':
 			puts("see bxgamma(1)");
-			return 0;
+			break;
 		}
 
 	if (optind < argc) {
