@@ -30,8 +30,6 @@
 #include <unistd.h>
 
 #include <X11/Xlib.h>
-#include <X11/Xos.h>
-#include <X11/Xutil.h>
 #include <X11/extensions/xf86vmode.h>
 
 static int major_version, minor_version;
@@ -136,13 +134,8 @@ main(int argc, char **argv)
 	/* Change gamma now */
 	if (!XF86VidModeSetGamma(dpy, screen, &gamma))
 		fprintf(stderr, "Unable to set gamma correction\n");
-	else if (!XF86VidModeGetGamma(dpy, screen, &gamma))
-		fprintf(stderr, "Unable to query gamma correction\n");
-	else {
+	else
 		ret = 0; /* Success! */
-		if (!quiet)
-			printf("blue: %6.3f\n",	(double)gamma.blue);
-	}
 
 finish:
 	XCloseDisplay (dpy);
