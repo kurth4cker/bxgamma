@@ -1,7 +1,7 @@
 .POSIX:
 
 NAME = bxgamma
-VERSION = 0.1.0a
+VERSION = 0.1.0
 
 PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin

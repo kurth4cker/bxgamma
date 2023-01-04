@@ -47,7 +47,7 @@ int
 main(int argc, char **argv)
 {
 	int ret = 2;
-	char *displayname = NULL;
+	const char *displayname = NULL;
 	Display *dpy;
 	float bgam = -1.0f;
 	XF86VidModeGamma gamma;
@@ -88,20 +88,19 @@ main(int argc, char **argv)
 	}
 
 	if ((dpy = XOpenDisplay(displayname)) == NULL) {
-		fprintf (stderr, "%s:  unable to open display '%s'\n",
-				argv[0], XDisplayName (displayname));
+		fprintf(stderr, "unable to open display '%s'\n", XDisplayName(displayname));
 		return 1;
 	}
 	else if (screen == -1)
 		screen = DefaultScreen(dpy);
 
 	if (!XF86VidModeQueryVersion(dpy, &major_version, &minor_version)) {
-		fprintf(stderr, "Unable to query video extension version\n");
+		fputs("unable to query video extension version\n", stderr);
 		goto finish;
 	}
 
 	if (!XF86VidModeQueryExtension(dpy, &event_base, &error_base)) {
-		fprintf(stderr, "Unable to query video extension information\n");
+		fputs("unable to query video extension information\n", stderr);
 		goto finish;
 	}
 
@@ -111,13 +110,13 @@ main(int argc, char **argv)
 		fprintf(stderr,
 				"Xserver is running an old XFree86-VidModeExtension version"
 				" (%d.%d)\n", major_version, minor_version);
-		fprintf(stderr, "Minimum required version is %d.%d\n",
+		fprintf(stderr, "minimum required version is %d.%d\n",
 				MINMAJOR, MINMINOR);
 		goto finish;
 	}
 
 	if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
-		fprintf(stderr, "Unable to query gamma correction\n");
+		fputs("unable to query gamma correction\n", stderr);
 		goto finish;
 	}
 	else if (!quiet)
@@ -133,11 +132,11 @@ main(int argc, char **argv)
 
 	/* Change gamma now */
 	if (!XF86VidModeSetGamma(dpy, screen, &gamma))
-		fprintf(stderr, "Unable to set gamma correction\n");
+		fputs("unable to set gamma correction\n", stderr);
 	else
 		ret = 0; /* Success! */
 
 finish:
-	XCloseDisplay (dpy);
+	XCloseDisplay(dpy);
 	return ret;
 }
