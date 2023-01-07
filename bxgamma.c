@@ -1,4 +1,5 @@
 /*
+ * Copyright 2022,2023 kurth4cker
  * Copyright 1999  The XFree86 Project
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
@@ -43,8 +44,7 @@ static int event_base, error_base;
 #define GAMMA_MIN 0.1f
 #define GAMMA_MAX 10.0f
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	int ret = 2;
 	const char *displayname = NULL;
