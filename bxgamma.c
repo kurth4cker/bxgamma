@@ -58,13 +58,9 @@ int main(int argc, char **argv)
 	while ((ch = getopt(argc, argv, "d:s:qhv")) != -1)
 		switch (ch) {
 		case 'd':
-			if (!optarg)
-				return 1;
 			displayname = optarg;
 			break;
 		case 's':
-			if (!optarg)
-				return 1;
 			screen = atoi(optarg);
 			break;
 		case 'q':
@@ -72,10 +68,14 @@ int main(int argc, char **argv)
 			break;
 		case 'v':
 			puts(PACKAGE_STRING);
+			return 0;
 			break;
 		case 'h':
 			puts("see bxgamma(1)");
+			return 0;
 			break;
+		case '?':
+			return 1;
 		}
 
 	if (optind < argc) {
