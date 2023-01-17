@@ -46,7 +46,7 @@ static int event_base, error_base;
 
 static Display *dpy;
 
-void quit(void)
+void close_display(void)
 {
 	XCloseDisplay(dpy);
 }
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 	if (screen == -1)
 		screen = DefaultScreen(dpy);
 
-	atexit(quit);
+	atexit(close_display);
 
 	if (!XF86VidModeQueryVersion(dpy, &major_version, &minor_version)) {
 		fputs("unable to query video extension version\n", stderr);
