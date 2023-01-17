@@ -33,9 +33,6 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/xf86vmode.h>
 
-static int major_version, minor_version;
-static int event_base, error_base;
-
 /* Minimum extension version required */
 #define MINMAJOR 2
 #define MINMINOR 0
@@ -44,11 +41,19 @@ static int event_base, error_base;
 #define GAMMA_MIN 0.1f
 #define GAMMA_MAX 10.0f
 
+static int major_version, minor_version;
+static int event_base, error_base;
+
+static Display *dpy;
+
+void quit(void)
+{
+	XCloseDisplay(dpy);
+}
+
 int main(int argc, char **argv)
 {
-	int ret = 2;
 	const char *displayname = NULL;
-	Display *dpy;
 	float bgam = -1.0f;
 	XF86VidModeGamma gamma;
 	int quiet = 0;
@@ -91,17 +96,19 @@ int main(int argc, char **argv)
 		fprintf(stderr, "unable to open display '%s'\n", XDisplayName(displayname));
 		return 1;
 	}
-	else if (screen == -1)
+	if (screen == -1)
 		screen = DefaultScreen(dpy);
+
+	atexit(quit);
 
 	if (!XF86VidModeQueryVersion(dpy, &major_version, &minor_version)) {
 		fputs("unable to query video extension version\n", stderr);
-		goto finish;
+		return 2;
 	}
 
 	if (!XF86VidModeQueryExtension(dpy, &event_base, &error_base)) {
 		fputs("unable to query video extension information\n", stderr);
-		goto finish;
+		return 2;
 	}
 
 	/* Fail if the extension version in the server is too old */
@@ -112,31 +119,25 @@ int main(int argc, char **argv)
 				" (%d.%d)\n", major_version, minor_version);
 		fprintf(stderr, "minimum required version is %d.%d\n",
 				MINMAJOR, MINMINOR);
-		goto finish;
+		return 2;
 	}
 
 	if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
 		fputs("unable to query gamma correction\n", stderr);
-		goto finish;
+		return 2;
 	}
 	else if (!quiet)
 		printf("blue: %.3f\n", (double)gamma.blue);
 
 	if (bgam >= 0.0f)
 		gamma.blue = bgam;
-	else {
+	else
 		/* Not changing gamma, all done */
-		ret = 0;
-		goto finish;
-	}
+		return 0;
 
 	/* Change gamma now */
-	if (!XF86VidModeSetGamma(dpy, screen, &gamma))
+	if (!XF86VidModeSetGamma(dpy, screen, &gamma)) {
 		fputs("unable to set gamma correction\n", stderr);
-	else
-		ret = 0; /* Success! */
-
-finish:
-	XCloseDisplay(dpy);
-	return ret;
+		return 2;
+	}
 }
