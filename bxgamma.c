@@ -23,8 +23,6 @@
  * Written by David Bateman
  */
 
-#define _POSIX_C_SOURCE 200809L
-
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,8 +36,8 @@
 #define MINMINOR 0
 
 /* Maximum and Minimum gamma values */
-#define GAMMA_MIN 0.1f
-#define GAMMA_MAX 10.0f
+#define GAMMA_MIN 1
+#define GAMMA_MAX 100
 
 static int major_version, minor_version;
 static int event_base, error_base;
@@ -54,22 +52,18 @@ void close_display(void)
 int main(int argc, char **argv)
 {
 	const char *displayname = NULL;
-	float bgam = -1.0f;
+	int bgam = -1;
 	XF86VidModeGamma gamma;
-	int quiet = 0;
 	int screen = -1;
 	int ch;
 
-	while ((ch = getopt(argc, argv, "d:s:qhv")) != -1)
+	while ((ch = getopt(argc, argv, "d:s:hv")) != -1)
 		switch (ch) {
 		case 'd':
 			displayname = optarg;
 			break;
 		case 's':
 			screen = atoi(optarg);
-			break;
-		case 'q':
-			quiet = 1;
 			break;
 		case 'v':
 			puts(PACKAGE_STRING);
@@ -84,10 +78,10 @@ int main(int argc, char **argv)
 		}
 
 	if (optind < argc) {
-		bgam = strtof(argv[optind], NULL);
+		bgam = atoi(argv[optind]);
 		if (bgam < GAMMA_MIN || bgam > GAMMA_MAX) {
-			fprintf(stderr, "gamma values must be between %6.3f and %6.3f\n",
-					(double)GAMMA_MIN, (double)GAMMA_MAX);
+			fprintf(stderr, "gamma values must be between %d and %d\n",
+					GAMMA_MIN, GAMMA_MAX);
 			return 1;
 		}
 	}
@@ -126,14 +120,14 @@ int main(int argc, char **argv)
 		fputs("unable to query gamma correction\n", stderr);
 		return 2;
 	}
-	else if (!quiet)
-		printf("blue: %.3f\n", (double)gamma.blue);
 
-	if (bgam >= 0.0f)
-		gamma.blue = bgam;
-	else
+	if (bgam >= 0)
+		gamma.blue = bgam / 10.f;
+	else {
+		printf("blue gamma: %d\n", (int)(10 * gamma.blue));
 		/* Not changing gamma, all done */
 		return 0;
+	}
 
 	/* Change gamma now */
 	if (!XF86VidModeSetGamma(dpy, screen, &gamma)) {
