@@ -23,7 +23,6 @@
  * Written by David Bateman
  */
 
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -45,19 +44,12 @@ void close_display(void)
 int main(int argc, char **argv)
 {
 	XF86VidModeGamma gamma;
-	const char *displayname = NULL;
 	int bgam = -1;
-	int screen = -1;
+	int screen;
 	int ch;
 
-	while ((ch = getopt(argc, argv, "d:s:hv")) != -1)
+	while ((ch = getopt(argc, argv, "hv")) != -1)
 		switch (ch) {
-		case 'd':
-			displayname = optarg;
-			break;
-		case 's':
-			screen = atoi(optarg);
-			break;
 		case 'v':
 			puts(PACKAGE_STRING);
 			return 0;
@@ -79,13 +71,12 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if ((dpy = XOpenDisplay(displayname)) == NULL) {
-		fprintf(stderr, "unable to open display '%s'\n", XDisplayName(displayname));
+	if ((dpy = XOpenDisplay(NULL)) == NULL) {
+		fprintf(stderr, "unable to open display '%s'\n", XDisplayName(NULL));
 		return 1;
 	}
-	if (screen == -1)
-		screen = DefaultScreen(dpy);
 
+	screen = DefaultScreen(dpy);
 	atexit(close_display);
 
 	if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
