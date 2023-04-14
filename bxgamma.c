@@ -23,6 +23,7 @@
  * Written by David Bateman
  */
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -39,6 +40,16 @@ static Display *dpy;
 void close_display(void)
 {
 	XCloseDisplay(dpy);
+}
+
+void eprintf(const char *fmt, ...)
+{
+	va_list vlist;
+	va_start(vlist, fmt);
+	vfprintf(stderr, fmt, vlist);
+	va_end(vlist);
+
+	exit(EXIT_FAILURE);
 }
 
 int main(int argc, char **argv)
@@ -64,37 +75,26 @@ int main(int argc, char **argv)
 
 	if (optind < argc) {
 		bgam = atoi(argv[optind]);
-		if (bgam < GAMMA_MIN || bgam > GAMMA_MAX) {
-			fprintf(stderr, "gamma values must be between %d and %d\n",
+		if (bgam < GAMMA_MIN || bgam > GAMMA_MAX)
+			eprintf( "gamma values must be between %d and %d\n",
 					GAMMA_MIN, GAMMA_MAX);
-			return 1;
-		}
 	}
 
-	if ((dpy = XOpenDisplay(NULL)) == NULL) {
-		fprintf(stderr, "unable to open display '%s'\n", XDisplayName(NULL));
-		return 1;
-	}
+	if ((dpy = XOpenDisplay(NULL)) == NULL)
+		eprintf("unable to open display '%s'\n", XDisplayName(NULL));
 
 	screen = DefaultScreen(dpy);
 	atexit(close_display);
 
-	if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
-		fputs("unable to query gamma correction\n", stderr);
-		return 2;
-	}
+	if (!XF86VidModeGetGamma(dpy, screen, &gamma))
+		eprintf("unable to query gamma correction\n");
 
-	if (bgam >= 0)
-		gamma.blue = bgam / 10.f;
+	if (bgam >= 0) {
+		gamma.blue = bgam / 10.0f;
+		if (!XF86VidModeSetGamma(dpy, screen, &gamma))
+			eprintf("unable to set gamma correction");
+	}
 	else {
-		printf("blue gamma: %d\n", (int)(10 * gamma.blue));
-		/* Not changing gamma, all done */
-		return 0;
-	}
-
-	/* Change gamma now */
-	if (!XF86VidModeSetGamma(dpy, screen, &gamma)) {
-		fputs("unable to set gamma correction\n", stderr);
-		return 2;
+		printf("%d\n", (int)(10 * gamma.blue));
 	}
 }
