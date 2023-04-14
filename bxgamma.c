@@ -31,16 +31,9 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/xf86vmode.h>
 
-/* Minimum extension version required */
-#define MINMAJOR 2
-#define MINMINOR 0
-
 /* Maximum and Minimum gamma values */
 #define GAMMA_MIN 1
 #define GAMMA_MAX 100
-
-static int major_version, minor_version;
-static int event_base, error_base;
 
 static Display *dpy;
 
@@ -51,9 +44,9 @@ void close_display(void)
 
 int main(int argc, char **argv)
 {
+	XF86VidModeGamma gamma;
 	const char *displayname = NULL;
 	int bgam = -1;
-	XF86VidModeGamma gamma;
 	int screen = -1;
 	int ch;
 
@@ -94,27 +87,6 @@ int main(int argc, char **argv)
 		screen = DefaultScreen(dpy);
 
 	atexit(close_display);
-
-	if (!XF86VidModeQueryVersion(dpy, &major_version, &minor_version)) {
-		fputs("unable to query video extension version\n", stderr);
-		return 2;
-	}
-
-	if (!XF86VidModeQueryExtension(dpy, &event_base, &error_base)) {
-		fputs("unable to query video extension information\n", stderr);
-		return 2;
-	}
-
-	/* Fail if the extension version in the server is too old */
-	if (major_version < MINMAJOR ||
-			(major_version == MINMAJOR && minor_version < MINMINOR)) {
-		fprintf(stderr,
-				"Xserver is running an old XFree86-VidModeExtension version"
-				" (%d.%d)\n", major_version, minor_version);
-		fprintf(stderr, "minimum required version is %d.%d\n",
-				MINMAJOR, MINMINOR);
-		return 2;
-	}
 
 	if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
 		fputs("unable to query gamma correction\n", stderr);
