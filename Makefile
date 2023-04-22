@@ -14,11 +14,14 @@ BXGAMMA_LIBS = -lX11 -lXxf86vm $(LDLIBS)
 
 PROG = $(NAME)
 SRC = bxgamma.c
+OBJ = $(SRC:.c=.o)
 
 all: $(PROG)
+$(PROG): $(OBJ)
+	$(CC) $(LDFLAGS) -o $@ $(OBJ) $(BXGAMMA_LIBS)
 
 clean:
-	rm -f $(PROG)
+	rm -f $(PROG) $(OBJ)
 
 dist:
 	mkdir -p $(NAME)-$(VERSION)
@@ -33,6 +36,6 @@ install: $(PROG)
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/$(PROG)
 
-.SUFFIXES: .c
-.c:
-	$(CC) $(BXGAMMA_CFLAGS) $(BXGAMMA_CPPFLAGS) $(LDFLAGS) -o $@ $< $(BXGAMMA_LIBS)
+.SUFFIXES: .c .o
+.c.o:
+	$(CC) $(BXGAMMA_CFLAGS) $(BXGAMMA_CPPFLAGS) -c $<

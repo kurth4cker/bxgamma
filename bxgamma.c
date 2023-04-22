@@ -37,11 +37,6 @@
 
 static Display *dpy;
 
-void close_display(void)
-{
-	XCloseDisplay(dpy);
-}
-
 void eprintf(const char *fmt, ...)
 {
 	va_list vlist;
@@ -49,6 +44,7 @@ void eprintf(const char *fmt, ...)
 	vfprintf(stderr, fmt, vlist);
 	va_end(vlist);
 
+	XCloseDisplay(dpy);
 	exit(EXIT_FAILURE);
 }
 
@@ -80,11 +76,10 @@ int main(int argc, char **argv)
 					GAMMA_MIN, GAMMA_MAX);
 	}
 
-	if ((dpy = XOpenDisplay(NULL)) == NULL)
+	if (!(dpy = XOpenDisplay(NULL)))
 		eprintf("unable to open display '%s'\n", XDisplayName(NULL));
 
 	screen = DefaultScreen(dpy);
-	atexit(close_display);
 
 	if (!XF86VidModeGetGamma(dpy, screen, &gamma))
 		eprintf("unable to query gamma correction\n");
@@ -97,4 +92,6 @@ int main(int argc, char **argv)
 	else {
 		printf("%d\n", (int)(10 * gamma.blue));
 	}
+
+	XCloseDisplay(dpy);
 }
