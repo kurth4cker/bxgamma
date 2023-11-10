@@ -23,7 +23,9 @@
  * Written by David Bateman
  */
 
-#include <stdarg.h>
+#define _POSIX_C_SOURCE 200809L
+
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -31,32 +33,44 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/xf86vmode.h>
 
+/* Minimum extension version required */
+#define MINMAJOR 2
+#define MINMINOR 0
+
 /* Maximum and Minimum gamma values */
-#define GAMMA_MIN 1
-#define GAMMA_MAX 100
+#define GAMMA_MIN 0.1f
+#define GAMMA_MAX 10.0f
+
+static int major_version, minor_version;
+static int event_base, error_base;
 
 static Display *dpy;
 
-void eprintf(const char *fmt, ...)
+void close_display(void)
 {
-	va_list vlist;
-	va_start(vlist, fmt);
-	vfprintf(stderr, fmt, vlist);
-	va_end(vlist);
-
 	XCloseDisplay(dpy);
-	exit(EXIT_FAILURE);
 }
 
 int main(int argc, char **argv)
 {
+	const char *displayname = NULL;
+	float bgam = -1.0f;
 	XF86VidModeGamma gamma;
-	int bgam = -1;
-	int screen;
+	int quiet = 0;
+	int screen = -1;
 	int ch;
 
-	while ((ch = getopt(argc, argv, "hv")) != -1)
+	while ((ch = getopt(argc, argv, "d:s:qhv")) != -1)
 		switch (ch) {
+		case 'd':
+			displayname = optarg;
+			break;
+		case 's':
+			screen = atoi(optarg);
+			break;
+		case 'q':
+			quiet = 1;
+			break;
 		case 'v':
 			puts(PACKAGE_STRING);
 			return 0;
@@ -70,28 +84,60 @@ int main(int argc, char **argv)
 		}
 
 	if (optind < argc) {
-		bgam = atoi(argv[optind]);
-		if (bgam < GAMMA_MIN || bgam > GAMMA_MAX)
-			eprintf( "gamma values must be between %d and %d\n",
-					GAMMA_MIN, GAMMA_MAX);
+		bgam = strtof(argv[optind], NULL);
+		if (bgam < GAMMA_MIN || bgam > GAMMA_MAX) {
+			fprintf(stderr, "gamma values must be between %6.3f and %6.3f\n",
+					(double)GAMMA_MIN, (double)GAMMA_MAX);
+			return 1;
+		}
 	}
 
-	if (!(dpy = XOpenDisplay(NULL)))
-		eprintf("unable to open display '%s'\n", XDisplayName(NULL));
-
-	screen = DefaultScreen(dpy);
-
-	if (!XF86VidModeGetGamma(dpy, screen, &gamma))
-		eprintf("unable to query gamma correction\n");
-
-	if (bgam >= 0) {
-		gamma.blue = bgam / 10.0f;
-		if (!XF86VidModeSetGamma(dpy, screen, &gamma))
-			eprintf("unable to set gamma correction");
+	if ((dpy = XOpenDisplay(displayname)) == NULL) {
+		fprintf(stderr, "unable to open display '%s'\n", XDisplayName(displayname));
+		return 1;
 	}
-	else {
-		printf("%d\n", (int)(10 * gamma.blue));
+	if (screen == -1)
+		screen = DefaultScreen(dpy);
+
+	atexit(close_display);
+
+	if (!XF86VidModeQueryVersion(dpy, &major_version, &minor_version)) {
+		fputs("unable to query video extension version\n", stderr);
+		return 2;
 	}
 
-	XCloseDisplay(dpy);
+	if (!XF86VidModeQueryExtension(dpy, &event_base, &error_base)) {
+		fputs("unable to query video extension information\n", stderr);
+		return 2;
+	}
+
+	/* Fail if the extension version in the server is too old */
+	if (major_version < MINMAJOR ||
+			(major_version == MINMAJOR && minor_version < MINMINOR)) {
+		fprintf(stderr,
+				"Xserver is running an old XFree86-VidModeExtension version"
+				" (%d.%d)\n", major_version, minor_version);
+		fprintf(stderr, "minimum required version is %d.%d\n",
+				MINMAJOR, MINMINOR);
+		return 2;
+	}
+
+	if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
+		fputs("unable to query gamma correction\n", stderr);
+		return 2;
+	}
+	else if (!quiet)
+		printf("blue: %.3f\n", (double)gamma.blue);
+
+	if (bgam >= 0.0f)
+		gamma.blue = bgam;
+	else
+		/* Not changing gamma, all done */
+		return 0;
+
+	/* Change gamma now */
+	if (!XF86VidModeSetGamma(dpy, screen, &gamma)) {
+		fputs("unable to set gamma correction\n", stderr);
+		return 2;
+	}
 }

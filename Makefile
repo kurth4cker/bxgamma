@@ -8,20 +8,17 @@ BINDIR = $(PREFIX)/bin
 
 CC = cc
 
-BXGAMMA_CPPFLAGS = -DPACKAGE_STRING='"$(NAME) $(VERSION)"' $(CPPFLAGS)
-BXGAMMA_CFLAGS = $(CFLAGS)
-BXGAMMA_LIBS = -lX11 -lXxf86vm $(LDLIBS)
+GAMMA_CPPFLAGS = -DPACKAGE_STRING='"$(NAME) $(VERSION)"' $(CPPFLAGS)
+GAMMA_CFLAGS = -std=c99 $(CFLAGS)
+GAMMA_LIBS = -lX11 -lXxf86vm $(LDLIBS)
 
 PROG = $(NAME)
 SRC = bxgamma.c
-OBJ = $(SRC:.c=.o)
 
 all: $(PROG)
-$(PROG): $(OBJ)
-	$(CC) $(LDFLAGS) -o $@ $(OBJ) $(BXGAMMA_LIBS)
 
 clean:
-	rm -f $(PROG) $(OBJ)
+	rm -f $(PROG)
 
 dist:
 	mkdir -p $(NAME)-$(VERSION)
@@ -36,6 +33,6 @@ install: $(PROG)
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/$(PROG)
 
-.SUFFIXES: .c .o
-.c.o:
-	$(CC) $(BXGAMMA_CFLAGS) $(BXGAMMA_CPPFLAGS) -c $<
+.SUFFIXES: .c
+.c:
+	$(CC) $(GAMMA_CFLAGS) $(GAMMA_CPPFLAGS) $(LDFLAGS) -o $@ $< $(GAMMA_LIBS)
