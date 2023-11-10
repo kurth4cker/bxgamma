@@ -31,6 +31,8 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/xf86vmode.h>
 
+#include <sdie.h>
+
 /* Minimum extension version required */
 #define MINMAJOR 2
 #define MINMINOR 0
@@ -44,7 +46,7 @@ static int event_base, error_base;
 
 static Display *dpy;
 
-void close_display(void)
+static void close_display(void)
 {
 	XCloseDisplay(dpy);
 }
@@ -88,24 +90,18 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if ((dpy = XOpenDisplay(displayname)) == NULL) {
-		fprintf(stderr, "unable to open display '%s'\n", XDisplayName(displayname));
-		return 1;
-	}
+	if ((dpy = XOpenDisplay(displayname)) == NULL)
+		die("unable to open display '%s'\n", XDisplayName(displayname));
+	atexit(close_display);
+
 	if (screen == -1)
 		screen = DefaultScreen(dpy);
 
-	atexit(close_display);
+	if (!XF86VidModeQueryVersion(dpy, &major_version, &minor_version))
+		die("unable to query video extension version\n");
 
-	if (!XF86VidModeQueryVersion(dpy, &major_version, &minor_version)) {
-		fputs("unable to query video extension version\n", stderr);
-		return 2;
-	}
-
-	if (!XF86VidModeQueryExtension(dpy, &event_base, &error_base)) {
-		fputs("unable to query video extension information\n", stderr);
-		return 2;
-	}
+	if (!XF86VidModeQueryExtension(dpy, &event_base, &error_base))
+		die("unable to query video extension information\n");
 
 	/* Fail if the extension version in the server is too old */
 	if (major_version < MINMAJOR ||
@@ -113,27 +109,21 @@ int main(int argc, char **argv)
 		fprintf(stderr,
 				"Xserver is running an old XFree86-VidModeExtension version"
 				" (%d.%d)\n", major_version, minor_version);
-		fprintf(stderr, "minimum required version is %d.%d\n",
-				MINMAJOR, MINMINOR);
-		return 2;
+		die("minimum required version is %d.%d\n", MINMAJOR, MINMINOR);
 	}
 
-	if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
-		fputs("unable to query gamma correction\n", stderr);
-		return 2;
-	}
+	if (!XF86VidModeGetGamma(dpy, screen, &gamma))
+		die("unable to query gamma correction\n");
 	else if (!quiet)
-		printf("blue: %.3f\n", (double)gamma.blue);
+		printf("%.3f\n", (double)gamma.blue);
 
-	if (bgam >= 0.0f)
-		gamma.blue = bgam;
-	else
+	if (bgam < 0.0f)
 		/* Not changing gamma, all done */
 		return 0;
 
+	gamma.blue = bgam;
+
 	/* Change gamma now */
-	if (!XF86VidModeSetGamma(dpy, screen, &gamma)) {
-		fputs("unable to set gamma correction\n", stderr);
-		return 2;
-	}
+	if (!XF86VidModeSetGamma(dpy, screen, &gamma))
+		die("unable to set gamma correction\n");
 }

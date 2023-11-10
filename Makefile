@@ -8,7 +8,7 @@ BINDIR = $(PREFIX)/bin
 CC = cc -std=c99
 
 GAMMA_CFLAGS = $(CFLAGS) -DVERSION='"$(VERSION)"' $(CPPFLAGS)
-GAMMA_LIBS = -lX11 -lXxf86vm $(LDLIBS)
+GAMMA_LIBS = -lX11 -lXxf86vm -lsdie $(LDLIBS)
 
 BIN = bxgamma
 SRC = bxgamma.c
