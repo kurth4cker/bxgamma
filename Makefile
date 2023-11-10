@@ -1,38 +1,39 @@
 .POSIX:
 
-NAME = bxgamma
 VERSION = 0.1.0
 
 PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
 
-CC = cc
+CC = cc -std=c99
 
-GAMMA_CPPFLAGS = -DPACKAGE_STRING='"$(NAME) $(VERSION)"' $(CPPFLAGS)
-GAMMA_CFLAGS = -std=c99 $(CFLAGS)
+GAMMA_CFLAGS = $(CFLAGS) -DVERSION='"$(VERSION)"' $(CPPFLAGS)
 GAMMA_LIBS = -lX11 -lXxf86vm $(LDLIBS)
 
-PROG = $(NAME)
+BIN = bxgamma
 SRC = bxgamma.c
 
-all: $(PROG)
+DISTFILES = COPYING README Makefile $(SRC)
+DISTDIR = bxgamma-$(VERSION)
+
+all: $(BIN)
 
 clean:
-	rm -f $(PROG)
+	rm -f $(BIN)
 
 dist:
-	mkdir -p $(NAME)-$(VERSION)
-	cp -f COPYING README Makefile $(SRC) $(NAME)-$(VERSION)
-	tar -cf $(NAME)-$(VERSION).tar $(NAME)-$(VERSION)
-	rm -rf $(NAME)-$(VERSION)
+	mkdir -p $(DISTDIR)
+	cp -f $(DISTFILES) $(DISTDIR)
+	tar -cf $(DISTDIR).tar $(DISTDIR)
+	rm -rf $(DISTDIR)
 
-install: $(PROG)
+install: $(BIN)
 	mkdir -p $(DESTDIR)$(BINDIR)
-	cp -f $(PROG) $(DESTDIR)$(BINDIR)
+	cp -f $(BIN) $(DESTDIR)$(BINDIR)
 
 uninstall:
-	rm -f $(DESTDIR)$(BINDIR)/$(PROG)
+	rm -f $(DESTDIR)$(BINDIR)/$(BIN)
 
 .SUFFIXES: .c
 .c:
-	$(CC) $(GAMMA_CFLAGS) $(GAMMA_CPPFLAGS) $(LDFLAGS) -o $@ $< $(GAMMA_LIBS)
+	$(CC) $(GAMMA_CFLAGS) $(LDFLAGS) -o $@ $< $(GAMMA_LIBS)

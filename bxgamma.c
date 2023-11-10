@@ -23,8 +23,6 @@
  * Written by David Bateman
  */
 
-#define _POSIX_C_SOURCE 200809L
-
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,13 +70,11 @@ int main(int argc, char **argv)
 			quiet = 1;
 			break;
 		case 'v':
-			puts(PACKAGE_STRING);
+			puts("bxgamma " VERSION);
 			return 0;
-			break;
 		case 'h':
 			puts("see bxgamma(1)");
 			return 0;
-			break;
 		case '?':
 			return 1;
 		}
