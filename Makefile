@@ -7,7 +7,14 @@ MANDIR = $(PREFIX)/share/man
 
 CC = cc -std=c99
 
-BXGAMMA_CFLAGS = $(CFLAGS) -DVERSION='"$(VERSION)"' $(CPPFLAGS)
+DEBUG = yes
+
+CFLAGS_DEBUG_yes = -g
+CFLAGS_DEBUG_no = -DNDEBUG
+CFLAGS_DEBUG = $(CFLAGS_DEBUG_$(DEBUG))
+
+CFLAGS = -Wall -Werror -Wextra
+BXGAMMA_CFLAGS = $(CFLAGS_DEBUG) $(CFLAGS) -DVERSION='"$(VERSION)"'
 BXGAMMA_LIBS = -lX11 -lXxf86vm -lsdie $(LDLIBS)
 
 BIN = bxgamma
