@@ -1,3 +1,12 @@
+*****
+**
+This repository is archived. This is old bxgamma repository. That was forked
+from Xorg's xgamma. Here is new project related to this:
+
+	https://sr.ht/~kurth4cker/bgam/
+**
+*****
+
 bxgamma
 =======
 bxgamma allows X users to query and alter the blue gamma correction of a
